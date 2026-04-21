@@ -2,11 +2,11 @@
 #define FILE_HANDLER_H
 
 #include <string>
+#include <vector>
 
 class FileHandler {
 public:
-    static std::string readFile(const std::string& path);
-    static void writeFile(const std::string& path, const std::string& content);
+    static std::vector<std::string> readFile(const std::string& path);
 };
 
 #endif
