@@ -1,13 +1,29 @@
 #include "Preprocessor.h"
+#include <iostream>
+
 
 std::string Preprocessor::process(std::string& filePath){
     auto lines = fh.readFile(filePath);
-
-    for(auto& line: lines){
-        line = wsm.minify(line);
-        processed_code += line;
+    
+    std::string code;
+    for (auto& line : lines) {
+        code += line + "\n";
     }
 
-    return processed_code;
+    std::string noComments = cm.remove(code);
+
+    std::string result;
+    std::string temp;
+
+    for (char c : noComments) {
+        if (c == '\n') {
+            result += wsm.minify(temp) + "\n";
+            temp.clear();
+        } else {
+            temp += c;
+        }
+    }
+
+    return result;
 
 }
