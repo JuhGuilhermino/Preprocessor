@@ -10,7 +10,7 @@ class Preprocessor {
     WhitespaceMinifier wsm;
     FileHandler fh;
     CommentRemover cm;
-    static std::string processed_code;
+    //static std::string processed_code;
 
 public:
     std::string process(std::string& filePath);

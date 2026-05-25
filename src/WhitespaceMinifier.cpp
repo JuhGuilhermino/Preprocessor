@@ -1,6 +1,5 @@
 #include <WhitespaceMinifier.h>
 
-
 /**
  * Trims characters from the beginning of a string.
  *
