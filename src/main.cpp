@@ -22,16 +22,22 @@ int main(int argc, char* argv[]) {
 
     // 3. Analisador Léxico
     Lexer lexer;
-    lexer.setSource(code);
-    lexer.mainLoop();
-    std::vector<token> tokens = lexer.getTokenList();
-    std::cout << "\nTokens:\n";
-    for (const auto& t : tokens) {
-        std::cout << "Tipo: " << (int)t.type
-                  << " | Valor: " << t.value
-                  << " | Linha: " << t.line << "\n";
+    std::vector<token> tokens;
+    try{
+        lexer.setSource(code);
+        lexer.mainLoop();
+        tokens = lexer.getTokenList();
+        std::cout << "\nTokens:\n";
+        for (const auto& t : tokens) {
+            std::cout << "Tipo: " << (int)t.type
+                      << " | Valor: " << t.value
+                      << " | Linha: " << t.line << "\n";
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Erro léxico: " << e.what() << "\n";
+        return 0;
     }
-
+    
     // 4. Analisador Sintático
     Parser parser(tokens);
     try {
