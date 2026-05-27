@@ -484,7 +484,7 @@ void Parser::additionDifferenceExpression(){
 
 void Parser::comparisonExpression(){
     additionDifferenceExpression();
-    if(matchValue(">") || matchValue("<") || matchValue(">=") || matchValue("<=") || matchValue("==") || matchValue("!=")){
+    if(matchValue(">") || matchValue("<")){
         additionDifferenceExpression();
     }
 }
