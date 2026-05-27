@@ -142,7 +142,15 @@ void Parser::ifCommand()
     consumeValue(")", "Expected )");
     commands();
     consumeValue("else", "Expected else");
-    commands();
+
+    if (checkValue("if"))
+    {
+        ifCommand();
+    }
+    else
+    {
+        commands();
+    }
 }
 
 void Parser::whileCommand()
@@ -212,7 +220,16 @@ void Parser::commands()
     }
     else
     {
-        throw std::runtime_error("error");
+        throw std::runtime_error("Expected command");
+    }
+}
+
+void Parser::commandList()
+{
+    while (checkValue("{") || checkValue("if") || checkValue("while") ||
+           checkValue("System") || check(token_types_e::IDENTIFIER))
+    {
+        commands();
     }
 }
 
@@ -220,7 +237,7 @@ void Parser::methodBlock()
 {
     consumeValue("{", "Expected '{'");
     multipleVarsDeclarations();
-    commands();
+    commandList();
     consumeValue("return", "Expected return");
     expression();
     consumeValue(";", "Expected ;");
@@ -286,7 +303,7 @@ void Parser::mainClassDeclaration()
 
     consumeValue("{", "Expected '{' before main body");
 
-    commands();
+    commandList();
 
     consumeValue("}", "Expected '}' after main body");
 
@@ -403,9 +420,10 @@ void Parser::primaryExpression()
     } else if (matchValue("(")){
         expression();
         consumeValue(")", "Expected )");
+        return;
     }
 
-    throw std::runtime_error("error");
+    throw std::runtime_error("Expected expression");
 }
 
 void Parser::postfixExpression()
@@ -466,7 +484,7 @@ void Parser::additionDifferenceExpression(){
 
 void Parser::comparisonExpression(){
     additionDifferenceExpression();
-    if(matchValue(">")){
+    if(matchValue(">") || matchValue("<") || matchValue(">=") || matchValue("<=") || matchValue("==") || matchValue("!=")){
         additionDifferenceExpression();
     }
 }

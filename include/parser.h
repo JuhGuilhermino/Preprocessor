@@ -44,6 +44,7 @@ class Parser {
     void args();
 
     void commands();
+    void commandList();
     void ifCommand();
     void whileCommand();
     void printCommand();

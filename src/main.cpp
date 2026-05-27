@@ -25,12 +25,12 @@ int main(int argc, char* argv[]) {
     lexer.setSource(code);
     lexer.mainLoop();
     std::vector<token> tokens = lexer.getTokenList();
-    /*std::cout << "\nTokens:\n";
+    std::cout << "\nTokens:\n";
     for (const auto& t : tokens) {
         std::cout << "Tipo: " << (int)t.type
                   << " | Valor: " << t.value
                   << " | Linha: " << t.line << "\n";
-    }*/
+    }
 
     // 4. Analisador Sintático
     Parser parser(tokens);
