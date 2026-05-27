@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/preprocessor.dir/src/main.cpp.o CMakeFiles/preprocessor.dir/src/Preprocessor.cpp.o CMakeFiles/preprocessor.dir/src/CommentRemover.cpp.o CMakeFiles/preprocessor.dir/src/WhitespaceMinifier.cpp.o CMakeFiles/preprocessor.dir/src/FileHandler.cpp.o CMakeFiles/preprocessor.dir/src/lexer.cpp.o CMakeFiles/preprocessor.dir/src/parser.cpp.o -o preprocessor 

@@ -103,7 +103,7 @@ bool Lexer::verifyInMap(std::string value, token_types_e type){
 void Lexer::mainLoop(){
     reset();
     while(!finished()){
-        std::cout << "char: '" << peek() << "' idx: " << current << std::endl;
+        //std::cout << "char: '" << peek() << "' idx: " << current << std::endl;
 
         char currentChar = peek();
 

@@ -9,7 +9,8 @@
 
 std::string WhitespaceMinifier::ltrim(const std::string& s) {
   std::string clone{ s };
-  clone.erase(0, clone.find_first_not_of(" "));
+  //clone.erase(0, clone.find_first_not_of(" "));
+  clone.erase(0, clone.find_first_not_of(" \t"));
   return clone;
 }
 
@@ -21,7 +22,8 @@ std::string WhitespaceMinifier::ltrim(const std::string& s) {
  */
 std::string WhitespaceMinifier::rtrim(const std::string& s) {
   std::string clone{ s };
-  clone.erase(clone.find_last_not_of(" ") + 1);
+  //clone.erase(clone.find_last_not_of(" ") + 1);
+  clone.erase(clone.find_last_not_of(" \t") + 1);
   return clone;
 }
 
@@ -41,7 +43,7 @@ std::string WhitespaceMinifier::mtrim(const std::string& s){
 
     for (int i{1}; i < clone.length(); ++i){ 
 
-        if(clone[i] == ' '){
+        if(clone[i] == ' ' || clone[i] == '\t'){
            if (clone[i - 1] == ' ' ){
             continue;
            }

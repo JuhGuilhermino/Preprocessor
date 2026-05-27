@@ -11,4 +11,6 @@ add_executable(preprocessor
     src/CommentRemover.cpp
     src/WhitespaceMinifier.cpp
     src/FileHandler.cpp
+    src/lexer.cpp
+    src/parser.cpp
 )

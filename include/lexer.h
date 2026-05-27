@@ -1,22 +1,12 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "TokenTypes.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <utility>
 
-enum token_types_e : std::uint8_t{
-    RESERVED_WORD = 0,
-    IDENTIFIER,
-    INTEGER,
-    FLOAT,
-    OPERATORS,
-    DELIMITERS,
-    EOF_TOKEN,
-    OTHERS
-    
-};
 
 struct token {
     token_types_e type;
