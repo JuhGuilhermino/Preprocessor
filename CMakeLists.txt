@@ -9,6 +9,7 @@ add_executable(preprocessor
     src/main.cpp
     src/Compiler.cpp
     src/CompileHelper.cpp
+    src/ASTPrinter.cpp
     src/FileHandler.cpp
     src/lexer.cpp
     src/parser.cpp

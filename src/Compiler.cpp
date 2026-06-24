@@ -1,4 +1,5 @@
 #include "Compiler.h"
+#include "ASTPrinter.h"
 #include <iostream>
 
 int Compiler::compile(int argc, char* argv[]){
@@ -52,6 +53,10 @@ int Compiler::compile(int argc, char* argv[]){
     try{
         Parser parser(tokens);
         ast = parser.parse();
+        if(flags.print_sintatic_tree){
+            ASTPrinter printer(std::cout);
+            printer.print(*ast);
+        }
         std::cout << "Codigo sintaticamente correto!\n";
     } catch (const std::exception& e) {
         std::cerr << "Erro sintático: " << e.what() << "\n";
