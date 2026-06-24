@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include "lexer.h"
+#include "ast.h"
 
 
 class Parser {
@@ -26,46 +27,46 @@ class Parser {
     token consume(token_types_e type, std::string error);
     token consumeValue(const std::string& value, std::string error);
 
-    void block();
-    void methodBlock();
+    std::unique_ptr<BlockCommandNode> block();
+    void methodBlock(MethodNode& node);
 
-    void mainClassDeclaration();
-    void classDeclaration();
-    void multipleClassDeclarations();
+    MainClassNode mainClassDeclaration();
+    ClassNode classDeclaration();
+    std::vector<ClassNode> multipleClassDeclarations();
 
-    bool type();
+    TypeNode type();
     bool isTypeStart();
 
-    void varDeclaration();
-    void multipleVarsDeclarations();
+    VarDeclNode varDeclaration();
+    std::vector<VarDeclNode> multipleVarsDeclarations();
 
-    void methodDeclaration();
-    void multipleMethodsDeclarations();
-    void args();
+    MethodNode methodDeclaration();
+    std::vector<MethodNode> multipleMethodsDeclarations();
+    std::vector<VarDeclNode> args();
 
-    void commands();
-    void commandList();
-    void ifCommand();
-    void whileCommand();
-    void printCommand();
-    void assignmentCommand();
+    std::unique_ptr<CommandNode> commands();
+    std::vector<std::unique_ptr<CommandNode>> commandList();
+    std::unique_ptr<IfCommandNode> ifCommand();
+    std::unique_ptr<WhileCommandNode> whileCommand();
+    std::unique_ptr<PrintCommandNode>  printCommand();
+    std::unique_ptr<CommandNode> assignmentCommand();
 
-    void primaryExpression();
-    void postfixExpression();
-    void unaryExpression();
-    void multiplicationExpression();
-    void additionDifferenceExpression();
-    void comparisonExpression();
-    void andExpression();
-    void expression();
-    void listExpression();
+    std::unique_ptr<ExpressionNode> primaryExpression();
+    std::unique_ptr<ExpressionNode> postfixExpression();
+    std::unique_ptr<ExpressionNode> unaryExpression();
+    std::unique_ptr<ExpressionNode> multiplicationExpression();
+    std::unique_ptr<ExpressionNode> additionDifferenceExpression();
+    std::unique_ptr<ExpressionNode> comparisonExpression();
+    std::unique_ptr<ExpressionNode> andExpression();
+    std::unique_ptr<ExpressionNode> expression();
+    std::vector<std::unique_ptr<ExpressionNode>> listExpression();
 
 
 
 
     public:
     Parser(const std::vector<token>& tokens) : tokens(tokens) {}
-    void parse();
+    std::unique_ptr<ProgramNode> parse();
 };
 
 

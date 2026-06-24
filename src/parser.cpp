@@ -4,7 +4,7 @@ token Parser::peek()
 {
     if (tokens.empty())
     {
-        return {token_types_e::EOF_TOKEN, "", 0};
+        return {token_types_e::EOF_TOKEN, "", 0, 0};
     }
 
     if (current >= tokens.size())
@@ -19,7 +19,7 @@ token Parser::peekSpecific(int i)
 {
     if (tokens.empty())
     {
-        return {token_types_e::EOF_TOKEN, "", 0};
+        return {token_types_e::EOF_TOKEN, "", 0, 0};
     }
 
     if (i >= tokens.size())
@@ -34,7 +34,7 @@ token Parser::previous()
 {
     if (tokens.empty())
     {
-        return {token_types_e::EOF_TOKEN, "", 0};
+        return {token_types_e::EOF_TOKEN, "", 0, 0};
     }
 
     if (current == 0)
@@ -122,101 +122,117 @@ token Parser::consumeValue(const std::string &value, std::string error)
     }
     throw std::runtime_error(error);
 }
-void Parser::block()
+std::unique_ptr<BlockCommandNode> Parser::block()
 {
+    auto block = std::make_unique<BlockCommandNode>();
     consumeValue("{", "Expected {");
 
     while (!checkValue("}") && !finished())
     {
-        commands();
+        block->commands.push_back(commands());
     }
 
     consumeValue("}", "Expected }");
+    return block;
 }
 
-void Parser::ifCommand()
+std::unique_ptr<IfCommandNode> Parser::ifCommand()
 {
+    auto ifNode = std::make_unique<IfCommandNode>();
     consumeValue("if", "Expected if");
     consumeValue("(", "Expected (");
-    expression();
+    ifNode->condition = expression();
     consumeValue(")", "Expected )");
-    commands();
+    ifNode->thenCommand = commands();
     consumeValue("else", "Expected else");
 
     if (checkValue("if"))
     {
-        ifCommand();
+        ifNode->elseCommand = ifCommand();
     }
     else
     {
-        commands();
+        ifNode->elseCommand = commands();
     }
+
+    return ifNode;
 }
 
-void Parser::whileCommand()
+std::unique_ptr<WhileCommandNode> Parser::whileCommand()
 {
+    auto whileNode = std::make_unique<WhileCommandNode>();
+
     consumeValue("while", "Expected while");
     consumeValue("(", "Expected (");
-    expression();
+    whileNode->condition = expression();
     consumeValue(")", "Expected )");
-    commands();
+    whileNode->while_block = commands();
+    return whileNode;
 }
 
-void Parser::printCommand()
+std::unique_ptr<PrintCommandNode> Parser::printCommand()
 {
+    auto node = std::make_unique<PrintCommandNode>();
     consumeValue("System", "Expected System");
     consumeValue(".", "Expected .");
     consumeValue("out", "Expected out");
     consumeValue(".", "Expected .");
     consumeValue("println", "Expected println");
     consumeValue("(", "Expected (");
-    expression();
+    node->expression = expression();
     consumeValue(")", "Expected )");
     consumeValue(";", "Expected ;");
+    return node;
 }
 
-void Parser::assignmentCommand()
+std::unique_ptr<CommandNode> Parser::assignmentCommand()
 {
-    consume(token_types_e::IDENTIFIER, "Expected identifier");
+    auto identifier = consume(token_types_e::IDENTIFIER, "Expected identifier");
 
     if (checkValue("["))
     {
+        auto node = std::make_unique<ArrayAssignmentCommandNode>();
+        node->array_name = identifier.value;
         consumeValue("[", "Expected [");
-        expression();
+        node->index = expression();
         consumeValue("]", "Expected ]");
         consumeValue("=", "Expected =");
-        expression();
+        node->value = expression();
         consumeValue(";", "Expected ;");
+        return node;
     }
     else
     {
+        auto node = std::make_unique<AssignmentCommandNode>();
+        node->target = identifier.value;
         consumeValue("=", "Expected =");
-        expression();
+        node->value = expression();
         consumeValue(";", "Expected ;");
+        return node;
     }
 }
 
-void Parser::commands()
+std::unique_ptr<CommandNode> Parser::commands()
 {
     if (checkValue("{"))
     {
-        block();
+        return block();
     }
     else if (checkValue("if"))
     {
-        ifCommand();
+        return ifCommand();
     }
     else if (checkValue("while"))
     {
-        whileCommand();
+        return whileCommand();
     }
     else if (checkValue("System"))
     {
-        printCommand();
+        return printCommand();
     }
     else if (check(token_types_e::IDENTIFIER))
     {
-        assignmentCommand();
+        return assignmentCommand();
     }
     else
     {
@@ -224,68 +240,82 @@ void Parser::commands()
     }
 }
 
-void Parser::commandList()
+std::vector<std::unique_ptr<CommandNode>> Parser::commandList()
 {
+    std::vector<std::unique_ptr<CommandNode>> commandNodes;
     while (checkValue("{") || checkValue("if") || checkValue("while") ||
            checkValue("System") || check(token_types_e::IDENTIFIER))
     {
-        commands();
+        commandNodes.push_back(commands());
     }
+    return commandNodes;
 }
 
-void Parser::methodBlock()
+void Parser::methodBlock(MethodNode &node)
 {
     consumeValue("{", "Expected '{'");
-    multipleVarsDeclarations();
-    commandList();
+    node.localVariables = multipleVarsDeclarations();
+    node.commands = commandList();
     consumeValue("return", "Expected return");
-    expression();
+    node.returnExpression = expression();
     consumeValue(";", "Expected ;");
     consumeValue("}", "Expected }");
 }
 
-void Parser::args()
+std::vector<VarDeclNode> Parser::args()
 {
-    type();
-    consume(token_types_e::IDENTIFIER, "Expected arg name");
-
+    std::vector<VarDeclNode> vars;
+    VarDeclNode var;
+    var.type = type();
+    var.name = consume(token_types_e::IDENTIFIER, "Expected arg name").value;
+    vars.push_back(var);
     while (checkValue(","))
     {
+        VarDeclNode var;
         consumeValue(",", "Expected ,");
-        type();
-        consume(token_types_e::IDENTIFIER, "Expected arg name");
+        var.type = type();
+        var.name = consume(token_types_e::IDENTIFIER, "Expected arg name").value;
+        vars.push_back(var);
     }
+
+    return vars;
 }
 
-void Parser::methodDeclaration()
+MethodNode Parser::methodDeclaration()
 {
+    MethodNode method;
     consumeValue("public", "Expected public");
-    type();
-    consume(token_types_e::IDENTIFIER, "Exepected method identifier");
+    method.returnType = type();
+    method.name = consume(token_types_e::IDENTIFIER, "Exepected method identifier").value;
     consumeValue("(", "Expected (");
 
     if (!checkValue(")"))
     {
-        args();
+        method.parameters = args();
     }
 
     consumeValue(")", "Expected )");
-    methodBlock();
+    methodBlock(method);
+    return method;
 }
 
-void Parser::multipleMethodsDeclarations()
+std::vector<MethodNode> Parser::multipleMethodsDeclarations()
 {
+    std::vector<MethodNode> methods;
     while (checkValue("public"))
     {
-        methodDeclaration();
+        methods.push_back(methodDeclaration());
     }
+
+    return methods;
 }
 
-void Parser::mainClassDeclaration()
+MainClassNode Parser::mainClassDeclaration()
 {
+    MainClassNode main;
     consumeValue("class", "Expected 'class'");
 
-    consume(token_types_e::IDENTIFIER, "Expected main class name");
+    main.name = consume(token_types_e::IDENTIFIER, "Expected main class name").value;
 
     consumeValue("{", "Expected '{' after class name");
 
@@ -298,42 +328,48 @@ void Parser::mainClassDeclaration()
     consumeValue("String", "Expected 'String'");
     consumeValue("[", "Expected '[' after String");
     consumeValue("]", "Expected ']' after '['");
-    consume(token_types_e::IDENTIFIER, "Expected args name");
+    main.argsName = consume(token_types_e::IDENTIFIER, "Expected args name").value;
     consumeValue(")", "Expected ')' after main parameter");
 
     consumeValue("{", "Expected '{' before main body");
 
-    commandList();
+    main.commands = commandList();
 
     consumeValue("}", "Expected '}' after main body");
 
     consumeValue("}", "Expected '}' after main class");
+    return main;
 }
 
-void Parser::classDeclaration()
+ClassNode Parser::classDeclaration()
 {
+    ClassNode classNode;
     consumeValue("class", "Expected 'class'");
-    consume(token_types_e::IDENTIFIER, "Expected class name");
+    classNode.name = consume(token_types_e::IDENTIFIER, "Expected class name").value;
 
     if (matchValue("extends"))
     {
-        consume(token_types_e::IDENTIFIER, "Expected class name");
+        classNode.parentName = consume(token_types_e::IDENTIFIER, "Expected class name").value;
     }
 
     consumeValue("{", "Expected '{' before main body");
 
-    multipleVarsDeclarations();
-    multipleMethodsDeclarations();
+    classNode.variables = multipleVarsDeclarations();
+    classNode.methods = multipleMethodsDeclarations();
 
     consumeValue("}", "Expected '}' after main body");
+    return classNode;
 }
 
-void Parser::multipleClassDeclarations()
+std::vector<ClassNode> Parser::multipleClassDeclarations()
 {
+    std::vector<ClassNode> classVector;
     while (checkValue("class"))
     {
-        classDeclaration();
+        classVector.push_back(classDeclaration());
     }
+
+    return classVector;
 }
 
 bool Parser::isTypeStart()
@@ -341,116 +377,163 @@ bool Parser::isTypeStart()
     return (checkValue("int") || checkValue("boolean") || (check(token_types_e::IDENTIFIER) && checkNext(token_types_e::IDENTIFIER)));
 }
 
-bool Parser::type()
+TypeNode Parser::type()
 {
+    TypeNode type;
     if (matchValue("int"))
     {
         if (matchValue("["))
         {
             consumeValue("]", "Expected ]");
+            type.isArray = true;
         }
-        return true;
+        type.name = "int";
     }
 
-    if (matchValue("boolean"))
+    else if (matchValue("boolean"))
     {
-        return true;
+        type.name = "boolean";
     }
 
-    if (match(token_types_e::IDENTIFIER))
+    else if (check(token_types_e::IDENTIFIER))
     {
-        return true;
+        type.name = consume(token_types_e::IDENTIFIER, "Expected type").value;
     }
 
-    return false;
+    else
+    {
+        type.name = "";
+    }
+
+    return type;
 }
 
-void Parser::varDeclaration()
+VarDeclNode Parser::varDeclaration()
 {
-    if (!type())
+    VarDeclNode var;
+    var.type = type();
+    if (var.type.name == "")
     {
         throw std::runtime_error("Expected type");
     }
 
-    consume(token_types_e::IDENTIFIER, "Expected var name");
+    var.name = consume(token_types_e::IDENTIFIER, "Expected var name").value;
     consumeValue(";", "Expected ';' after variable declaration");
+    return var;
 }
 
-void Parser::multipleVarsDeclarations()
+std::vector<VarDeclNode> Parser::multipleVarsDeclarations()
 {
+    std::vector<VarDeclNode> vars;
     while (isTypeStart())
     {
-        varDeclaration();
+        vars.push_back(varDeclaration());
     }
+
+    return vars;
 }
 
-void Parser::parse()
+std::unique_ptr<ProgramNode> Parser::parse()
 {
-    mainClassDeclaration();
-    multipleClassDeclarations();
+    auto program = std::make_unique<ProgramNode>();
+    program->mainClass = mainClassDeclaration();
+    program->classes = multipleClassDeclarations();
     consume(token_types_e::EOF_TOKEN, "Expected end of file");
+    return program;
 }
 
-void Parser::primaryExpression()
+std::unique_ptr<ExpressionNode> Parser::primaryExpression()
 {
-    if (match(token_types_e::INTEGER))
+    if (check(token_types_e::INTEGER))
     {
-        return;
+        auto node = std::make_unique<IntegerExpressionNode>();
+        node->value = std::stoi(advance().value);
+        return node;
     }
     else if (matchValue("true"))
     {
-        return;
-    } else if (matchValue("false")){
-        return;
-    } else if (matchValue("this")){
-        return;
-    } else if (match(token_types_e::IDENTIFIER)){
-        return;
-    } else if (matchValue("new")){
-        if(matchValue("int")){
+        auto node = std::make_unique<BooleanExpressionNode>();
+        node->value = true;
+        return node;
+    }
+    else if (matchValue("false"))
+    {
+        auto node = std::make_unique<BooleanExpressionNode>();
+        node->value = false;
+        return node;
+    }
+    else if (matchValue("this"))
+    {
+        return std::make_unique<ThisExpressionNode>();
+    }
+    else if (check(token_types_e::IDENTIFIER))
+    {
+        auto node = std::make_unique<IdentifierExpressionNode>();
+        node->name = advance().value;
+        return node;
+    }
+    else if (matchValue("new"))
+    {
+        if (matchValue("int"))
+        {
+            auto node = std::make_unique<NewArrayExpressionNode>();
             consumeValue("[", "Expected [");
-            expression();
+            node->size = expression();
             consumeValue("]", "Expected ]");
-            return;
-        } else if (match(token_types_e::IDENTIFIER)){
+            return node;
+        }
+        else if (check(token_types_e::IDENTIFIER))
+        {
+            auto node = std::make_unique<NewObjectExpressionNode>();
+            node->class_name = advance().value;
             consumeValue("(", "Expected (");
             consumeValue(")", "Expected )");
-            return;
-        } 
-    } else if (matchValue("(")){
-        expression();
+            return node;
+        }
+    }
+    else if (matchValue("("))
+    {
+        auto node = expression();
         consumeValue(")", "Expected )");
-        return;
+        return node;
     }
 
     throw std::runtime_error("Expected expression");
 }
 
-void Parser::postfixExpression()
+std::unique_ptr<ExpressionNode> Parser::postfixExpression()
 {
-    primaryExpression();
+    auto node = primaryExpression();
 
     while (true)
     {
         if (matchValue("["))
         {
-            expression();
+            auto accessNode = std::make_unique<ArrayAccessExpressionNode>();
+            accessNode->array = std::move(node);
+            accessNode->index = expression();
             consumeValue("]", "Expected ]");
+            node = std::move(accessNode);
         }
         else if (matchValue("."))
         {
             if (matchValue("length"))
             {
-                // Reconheceu .length
+                auto lengthNode = std::make_unique<ArrayLengthExpressionNode>();
+                lengthNode->array = std::move(node);
+                node = std::move(lengthNode);
             }
             else
             {
-                consume(token_types_e::IDENTIFIER, "Expected method name after '.'");
+                auto callNode = std::make_unique<MethodCallExpressionNode>();
+                callNode->object = std::move(node);
+                callNode->method_name = consume(token_types_e::IDENTIFIER, "Expected method name after '.'").value;
                 consumeValue("(", "Expected ( after method name");
 
-                listExpression();
+                callNode->arguments = listExpression();
 
                 consumeValue(")", "Expected ) after method call");
+                node = std::move(callNode);
             }
         }
         else
@@ -458,56 +541,105 @@ void Parser::postfixExpression()
             break;
         }
     }
+
+    return node;
 }
 
-
-void Parser::unaryExpression(){
-    matchValue("!");
-    postfixExpression();
-}
-
-void Parser::multiplicationExpression(){
-    unaryExpression();
-
-    while(matchValue("*")){
-        unaryExpression();
+std::unique_ptr<ExpressionNode> Parser::unaryExpression()
+{
+    if (matchValue("!"))
+    {
+        auto node = std::make_unique<UnaryExpressionNode>();
+        node->op = "!";
+        node->value = unaryExpression();
+        return node;
     }
+    return postfixExpression();
 }
 
-void Parser::additionDifferenceExpression(){
-    multiplicationExpression();
+std::unique_ptr<ExpressionNode> Parser::multiplicationExpression()
+{
+    auto node = unaryExpression();
 
-    while(matchValue("+") || matchValue("-")){
-        multiplicationExpression();
-    }
-}
-
-void Parser::comparisonExpression(){
-    additionDifferenceExpression();
-    if(matchValue(">") || matchValue("<")){
-        additionDifferenceExpression();
-    }
-}
-
-void Parser::andExpression(){
-    comparisonExpression();
-    while(matchValue("&&")){
-        comparisonExpression();
-    }
-}
-
-void Parser::expression(){
-    andExpression();
-}
-
-void Parser::listExpression(){
-    if(checkValue(")")){
-        return;
-    }
-    expression();
-
-    while(matchValue(",")){
-        expression();
+    while (matchValue("*"))
+    {
+        auto binaryNode = std::make_unique<BinaryExpressionNode>();
+        binaryNode->value1 = std::move(node);
+        binaryNode->op = "*";
+        binaryNode->value2 = unaryExpression();
+        node = std::move(binaryNode);
     }
 
+    return node;
+}
+
+std::unique_ptr<ExpressionNode> Parser::additionDifferenceExpression()
+{
+    auto node = multiplicationExpression();
+
+    while (checkValue("+") || checkValue("-"))
+    {
+        auto binaryNode = std::make_unique<BinaryExpressionNode>();
+        binaryNode->value1 = std::move(node);
+        binaryNode->op = advance().value;
+        binaryNode->value2 = multiplicationExpression();
+        node = std::move(binaryNode);
+    }
+
+    return node;
+}
+
+std::unique_ptr<ExpressionNode> Parser::comparisonExpression()
+{
+    auto node = additionDifferenceExpression();
+
+    if (checkValue(">") || checkValue("<"))
+    {
+        auto binaryNode = std::make_unique<BinaryExpressionNode>();
+        binaryNode->value1 = std::move(node);
+        binaryNode->op = advance().value;
+        binaryNode->value2 = additionDifferenceExpression();
+        node = std::move(binaryNode);
+    }
+
+    return node;
+}
+
+std::unique_ptr<ExpressionNode> Parser::andExpression()
+{
+    auto node = comparisonExpression();
+
+    while (matchValue("&&"))
+    {
+        // o ponteiro que estava em node agora pertence a binaryNode->value1
+        auto binaryNode = std::make_unique<BinaryExpressionNode>();
+        binaryNode->value1 = std::move(node);
+        binaryNode->op = "&&";
+        binaryNode->value2 = comparisonExpression();
+        node = std::move(binaryNode);
+    }
+
+    return node;
+}
+
+std::unique_ptr<ExpressionNode> Parser::expression()
+{
+    return andExpression();
+}
+
+std::vector<std::unique_ptr<ExpressionNode>> Parser::listExpression()
+{
+    std::vector<std::unique_ptr<ExpressionNode>> expressions;
+    if (checkValue(")"))
+    {
+        return expressions;
+    }
+    expressions.push_back(expression());
+
+    while (matchValue(","))
+    {
+        expressions.push_back(expression());
+    }
+
+    return expressions;
 }
