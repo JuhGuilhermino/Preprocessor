@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 std::vector<std::string> FileHandler::readFile(const std::string& path){
     std::ifstream ifs{ path };
@@ -15,7 +16,7 @@ std::vector<std::string> FileHandler::readFile(const std::string& path){
       }
       ifs.close();
     } else {
-      std::cerr << "Erro ao abrir o arquivo: " << path << std::endl;
+      throw std::runtime_error("Erro ao abrir o arquivo: " + path);
     }
 
     return code;
