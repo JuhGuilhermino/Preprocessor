@@ -7,9 +7,8 @@ include_directories(include)
 
 add_executable(preprocessor
     src/main.cpp
-    src/Preprocessor.cpp
-    src/CommentRemover.cpp
-    src/WhitespaceMinifier.cpp
+    src/Compiler.cpp
+    src/CompileHelper.cpp
     src/FileHandler.cpp
     src/lexer.cpp
     src/parser.cpp
