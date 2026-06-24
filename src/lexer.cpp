@@ -1,8 +1,9 @@
 #include "lexer.h"
 
-#include <cctype>
 #include <algorithm>
+#include <cctype>
 #include <iostream>
+#include <stdexcept>
 
 std::unordered_map<token_types_e, std::vector<std::string>> Lexer::tokens = {
     {token_types_e::RESERVED_WORD, {"class", "if", "else", "return", "void", "static", "public", "while", "new", "this", "boolean", "int"}},
@@ -31,6 +32,21 @@ char Lexer::peekNext()
 
 void Lexer::advance()
 {
+    if (finished())
+    {
+        return;
+    }
+
+    if (source[current] == '\n')
+    {
+        ++line;
+        column = 1;
+    }
+    else
+    {
+        ++column;
+    }
+
     current++;
 }
 
@@ -87,27 +103,57 @@ bool Lexer::verifyInMap(std::string value, token_types_e type)
     return false;
 }
 
-void Lexer::mainLoop()
+void Lexer::mainLoop(bool stop_error)
 {
     reset();
+    std::vector<std::string> lexicalErrors;
+
     while (!finished())
     {
-        // std::cout << "char: '" << peek() << "' idx: " << current << std::endl;
-
         char currentChar = peek();
+        int tokenLine = line;
+        int tokenColumn = column;
 
         if (isspace(currentChar))
         {
-            if (currentChar == '\n')
+            advance();
+        }
+        else if (currentChar == '/' && peekNext() == '/')
+        {
+            while (!finished() && peek() != '\n')
             {
-                ++line;
+                advance();
             }
+        }
+        else if (currentChar == '/' && peekNext() == '*')
+        {
+            advance();
+            advance();
+
+            while (!finished() && !(peek() == '*' && peekNext() == '/'))
+            {
+                advance();
+            }
+
+            if (finished())
+            {
+                std::string error_message = "Comentario de bloco nao foi devidamente fechado na linha "
+                    + std::to_string(tokenLine) + ", coluna " + std::to_string(tokenColumn);
+                if (stop_error)
+                {
+                    throw std::runtime_error(error_message);
+                }
+                lexicalErrors.push_back(error_message);
+                break;
+            }
+
+            advance();
             advance();
         }
         else if (isdigit(currentChar))
         {
             auto number = readNumber();
-            tokenList.push_back({number.second, number.first, line});
+            tokenList.push_back({number.second, number.first, tokenLine, tokenColumn});
         }
         else if (isalpha(currentChar) || currentChar == '_')
         {
@@ -116,40 +162,58 @@ void Lexer::mainLoop()
 
             if (type == token_types_e::RESERVED_WORD)
             {
-                tokenList.push_back({token_types_e::RESERVED_WORD, word, line});
+                tokenList.push_back({token_types_e::RESERVED_WORD, word, tokenLine, tokenColumn});
             }
             else if (type == token_types_e::IDENTIFIER)
             {
-                tokenList.push_back({token_types_e::IDENTIFIER, word, line});
+                tokenList.push_back({token_types_e::IDENTIFIER, word, tokenLine, tokenColumn});
             }
         }
         else
         {
             std::string c(1, currentChar);
             std::string twoChar = c + peekNext();
-            
+
             if (verifyInMap(c, token_types_e::DELIMITERS))
             {
-                tokenList.push_back({token_types_e::DELIMITERS, c, line});
+                tokenList.push_back({token_types_e::DELIMITERS, c, tokenLine, tokenColumn});
                 advance();
             }
             else if (verifyInMap(c, token_types_e::OPERATORS))
             {
-                tokenList.push_back({token_types_e::OPERATORS, c, line});
+                tokenList.push_back({token_types_e::OPERATORS, c, tokenLine, tokenColumn});
                 advance();
             }
             else if (verifyInMap(twoChar, token_types_e::OPERATORS))
             {
-                tokenList.push_back({token_types_e::OPERATORS, twoChar, line});
+                tokenList.push_back({token_types_e::OPERATORS, twoChar, tokenLine, tokenColumn});
                 advance();
                 advance();
             }
             else
             {
-                std::string error_message = std::string("This token ") + currentChar + " is not valid";
-                throw std::runtime_error(error_message);
+                std::string error_message = std::string("token '") + currentChar + "' invalido na linha "
+                    + std::to_string(tokenLine) + ", coluna " + std::to_string(tokenColumn);
+                if (stop_error)
+                {
+                    throw std::runtime_error(error_message);
+                }
+                lexicalErrors.push_back(error_message);
+                advance();
             }
         }
     }
-    tokenList.push_back({token_types_e::EOF_TOKEN, "", line});
+
+    if (!lexicalErrors.empty())
+    {
+        std::string error_message = lexicalErrors.front();
+        for (size_t i = 1; i < lexicalErrors.size(); ++i)
+        {
+            error_message += "\n";
+            error_message += lexicalErrors[i];
+        }
+        throw std::runtime_error(error_message);
+    }
+
+    tokenList.push_back({token_types_e::EOF_TOKEN, "", line, column});
 }
