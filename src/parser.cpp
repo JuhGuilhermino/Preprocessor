@@ -143,16 +143,23 @@ std::unique_ptr<IfCommandNode> Parser::ifCommand()
     consumeValue("(", "Expected (");
     ifNode->condition = expression();
     consumeValue(")", "Expected )");
-    ifNode->thenCommand = commands();
-    consumeValue("else", "Expected else");
 
-    if (checkValue("if"))
+    ifNode->thenCommand = commands();
+
+    if (matchValue("else"))
     {
-        ifNode->elseCommand = ifCommand();
+        if (checkValue("if"))
+        {
+            ifNode->elseCommand = ifCommand();
+        }
+        else
+        {
+            ifNode->elseCommand = commands(); 
+        }
     }
     else
     {
-        ifNode->elseCommand = commands();
+        ifNode->elseCommand = nullptr;
     }
 
     return ifNode;

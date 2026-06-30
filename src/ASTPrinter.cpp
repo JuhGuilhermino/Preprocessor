@@ -165,6 +165,14 @@ void ASTPrinter::printCommand(const CommandNode& command)
         ++indentLevel;
         printCommand(*ifCommand->elseCommand);
         --indentLevel;
+
+        // Proteção contra nullptr
+        if (ifCommand->elseCommand) {
+            line("else");
+            ++indentLevel;
+            printCommand(*ifCommand->elseCommand);
+            --indentLevel;
+        }
         --indentLevel;
     }
     else if (const auto* whileCommand = dynamic_cast<const WhileCommandNode*>(&command))
