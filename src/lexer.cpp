@@ -5,8 +5,10 @@
 #include <iostream>
 #include <stdexcept>
 
+
+// Adicionei 'extends' e 'lenght' as palavras reservadas para admitir a herança
 std::unordered_map<token_types_e, std::vector<std::string>> Lexer::tokens = {
-    {token_types_e::RESERVED_WORD, {"class", "if", "else", "return", "void", "static", "public", "while", "new", "this", "boolean", "int"}},
+    {token_types_e::RESERVED_WORD, {"class", "if", "else", "return", "void", "static", "public", "while", "new", "this", "boolean", "int", "extends", "length"}},
     {token_types_e::IDENTIFIER, {}},
     {token_types_e::OPERATORS, {"=", "+", "*", "<", ">", "!", "-", "&&"}},
     {token_types_e::INTEGER, {}},
@@ -144,7 +146,7 @@ void Lexer::mainLoop(bool stop_error)
                     throw std::runtime_error(error_message);
                 }
                 lexicalErrors.push_back(error_message);
-                break;
+                //break;   // Para permitir que sejam retornados multiplos erros certo
             }
 
             advance();
@@ -174,20 +176,21 @@ void Lexer::mainLoop(bool stop_error)
             std::string c(1, currentChar);
             std::string twoChar = c + peekNext();
 
-            if (verifyInMap(c, token_types_e::DELIMITERS))
+            
+            if (verifyInMap(twoChar, token_types_e::OPERATORS)) // Troquei a ordem para verificar o && primeiro
+            {
+                tokenList.push_back({token_types_e::OPERATORS, twoChar, tokenLine, tokenColumn});
+                advance();
+                advance();
+            }
+            else if (verifyInMap(c, token_types_e::DELIMITERS)) 
             {
                 tokenList.push_back({token_types_e::DELIMITERS, c, tokenLine, tokenColumn});
                 advance();
             }
-            else if (verifyInMap(c, token_types_e::OPERATORS))
+            else if (verifyInMap(c, token_types_e::OPERATORS)) 
             {
                 tokenList.push_back({token_types_e::OPERATORS, c, tokenLine, tokenColumn});
-                advance();
-            }
-            else if (verifyInMap(twoChar, token_types_e::OPERATORS))
-            {
-                tokenList.push_back({token_types_e::OPERATORS, twoChar, tokenLine, tokenColumn});
-                advance();
                 advance();
             }
             else

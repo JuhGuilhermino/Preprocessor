@@ -13,4 +13,5 @@ add_executable(preprocessor
     src/FileHandler.cpp
     src/lexer.cpp
     src/parser.cpp
+    src/SymbolTable.cpp
 )

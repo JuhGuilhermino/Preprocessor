@@ -6,11 +6,16 @@
 #include <stdexcept>
 #include "lexer.h"
 #include "ast.h"
+#include "SymbolTable.h"
 
 
 class Parser {
     std::vector<token> tokens;
     int current = 0;
+
+    SymbolTable symbolTable;
+    std::string currentClassName = "";
+    std::string currentMethodName = "";
 
     token peek();
     token peekSpecific(int i);
@@ -67,6 +72,7 @@ class Parser {
     public:
     Parser(const std::vector<token>& tokens) : tokens(tokens) {}
     std::unique_ptr<ProgramNode> parse();
+    const SymbolTable& getSymbolTable() const { return symbolTable; }
 };
 
 

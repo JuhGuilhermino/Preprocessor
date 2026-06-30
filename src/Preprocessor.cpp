@@ -10,7 +10,7 @@ std::string Preprocessor::process(std::string& filePath){
         code += line + "\n";
     }
 
-    std::string noComments = cm.remove(code);
+    std::string nocomments = cm.remove(code);
 
     std::string result;
     std::string temp;

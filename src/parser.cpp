@@ -255,6 +255,13 @@ void Parser::methodBlock(MethodNode &node)
 {
     consumeValue("{", "Expected '{'");
     node.localVariables = multipleVarsDeclarations();
+
+    // Add cada variável local no escopo do método na tablea de simbolos
+    for (const auto& var : node.localVariables) {
+        std::string varTypeStr = var.type.name + (var.type.isArray ? "[]" : "");
+        symbolTable.addSymbol(var.name, varTypeStr, symbol_category_e::VARIABLE, "method_" + currentClassName + "_" + currentMethodName);
+    }
+
     node.commands = commandList();
     consumeValue("return", "Expected return");
     node.returnExpression = expression();
@@ -287,15 +294,29 @@ MethodNode Parser::methodDeclaration()
     consumeValue("public", "Expected public");
     method.returnType = type();
     method.name = consume(token_types_e::IDENTIFIER, "Exepected method identifier").value;
+    
+    // Add o método da classe atual
+    currentMethodName = method.name;
+    std::string retTypeStr = method.returnType.name + (method.returnType.isArray ? "[]" : "");
+    symbolTable.addSymbol(method.name, retTypeStr, symbol_category_e::METHOD, "class_" + currentClassName);
+
     consumeValue("(", "Expected (");
 
     if (!checkValue(")"))
     {
         method.parameters = args();
+        // Add cada parâmetro na tabela de simbolos
+        for (const auto& param : method.parameters) {
+            std::string paramTypeStr = param.type.name + (param.type.isArray ? "[]" : "");
+            symbolTable.addSymbol(param.name, paramTypeStr, symbol_category_e::VARIABLE, "method_" + currentClassName + "_" + currentMethodName);
+        }
     }
 
     consumeValue(")", "Expected )");
     methodBlock(method);
+
+    currentMethodName = "";
+
     return method;
 }
 
@@ -314,8 +335,13 @@ MainClassNode Parser::mainClassDeclaration()
 {
     MainClassNode main;
     consumeValue("class", "Expected 'class'");
-
     main.name = consume(token_types_e::IDENTIFIER, "Expected main class name").value;
+
+    // Add na tabela de símbolos
+    currentClassName = main.name;
+    currentMethodName = "main";
+    symbolTable.addSymbol(main.name, "class", symbol_category_e::CLASS, "global");
+    symbolTable.addSymbol("main", "void", symbol_category_e::METHOD, "class_" + currentClassName);
 
     consumeValue("{", "Expected '{' after class name");
 
@@ -329,15 +355,21 @@ MainClassNode Parser::mainClassDeclaration()
     consumeValue("[", "Expected '[' after String");
     consumeValue("]", "Expected ']' after '['");
     main.argsName = consume(token_types_e::IDENTIFIER, "Expected args name").value;
+    
+    // Add na tabela de símbolos
+    symbolTable.addSymbol(main.argsName, "String[]", symbol_category_e::VARIABLE, "method_" + currentClassName + "_" + currentMethodName);
+    
     consumeValue(")", "Expected ')' after main parameter");
-
     consumeValue("{", "Expected '{' before main body");
 
     main.commands = commandList();
 
     consumeValue("}", "Expected '}' after main body");
-
     consumeValue("}", "Expected '}' after main class");
+
+    currentClassName = "";
+    currentMethodName = "";
+
     return main;
 }
 
@@ -347,17 +379,32 @@ ClassNode Parser::classDeclaration()
     consumeValue("class", "Expected 'class'");
     classNode.name = consume(token_types_e::IDENTIFIER, "Expected class name").value;
 
+    // Add na tabela de símbolos
+    currentClassName = classNode.name;
+    symbolTable.addSymbol(classNode.name, "class", symbol_category_e::CLASS, "global");
+
     if (matchValue("extends"))
     {
         classNode.parentName = consume(token_types_e::IDENTIFIER, "Expected class name").value;
+        // Add na tabela de símbolos
+        symbolTable.setParentClass(classNode.name, classNode.parentName);
     }
 
     consumeValue("{", "Expected '{' before main body");
 
+    // Add atributos da classa na tabela de simbolos
     classNode.variables = multipleVarsDeclarations();
+    for (const auto& var : classNode.variables) {
+        std::string varTypeStr = var.type.name + (var.type.isArray ? "[]" : "");
+        symbolTable.addSymbol(var.name, varTypeStr, symbol_category_e::VARIABLE, "class_" + currentClassName);
+    }
+
     classNode.methods = multipleMethodsDeclarations();
 
     consumeValue("}", "Expected '}' after main body");
+
+    currentClassName = "";
+
     return classNode;
 }
 
@@ -593,7 +640,7 @@ std::unique_ptr<ExpressionNode> Parser::comparisonExpression()
 {
     auto node = additionDifferenceExpression();
 
-    if (checkValue(">") || checkValue("<"))
+    if (checkValue("<")) // Removi a comparação que add para passar no teste do prof: checkValue(">") || 
     {
         auto binaryNode = std::make_unique<BinaryExpressionNode>();
         binaryNode->value1 = std::move(node);

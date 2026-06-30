@@ -1,3 +1,0 @@
-/mnt/c/Users/juhgu/Code/DIM0164-Compiladores/Preprocessor/build/CMakeFiles/preprocessor.dir
-/mnt/c/Users/juhgu/Code/DIM0164-Compiladores/Preprocessor/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/juhgu/Code/DIM0164-Compiladores/Preprocessor/build/CMakeFiles/rebuild_cache.dir

@@ -57,6 +57,9 @@ int Compiler::compile(int argc, char* argv[]){
             ASTPrinter printer(std::cout);
             printer.print(*ast);
         }
+        if (flags.print_symbols_table) {
+            parser.getSymbolTable().print();
+        }
         std::cout << "Codigo sintaticamente correto!\n";
     } catch (const std::exception& e) {
         std::cerr << "Erro sintático: " << e.what() << "\n";
