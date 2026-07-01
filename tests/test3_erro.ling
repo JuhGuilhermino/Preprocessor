@@ -1,0 +1,15 @@
+class Main {
+  public static void main(String[] args) {
+    int 2x;
+    boolean flag;
+
+    flag = tru;
+    x = 10 @ 3;
+
+    if (x < 10) {
+      System.out.println(x)
+    } else {
+      System.out.println(0);
+    }
+  }
+}

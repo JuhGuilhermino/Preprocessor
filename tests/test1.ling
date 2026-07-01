@@ -1,0 +1,17 @@
+class Main {
+  public static void main(String[] args) {
+    int x;
+    boolean ok;
+    int[] v;
+
+    x = 10;
+    ok = true;
+    v = new int[5];
+
+    if (ok && x < 20) {
+      System.out.println(x);
+    } else {
+      System.out.println(v.length);
+    }
+  }
+}

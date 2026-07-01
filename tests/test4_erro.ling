@@ -1,0 +1,27 @@
+class Main {
+  public static void main(String[] args) {
+    int x;
+    boolean b;
+    int[] arr;
+    A a;
+
+    x = true;
+    b = 10;
+    arr = new int[3];
+    arr[false] = 1;
+    a = new B();
+    System.out.println(a.inexistente(1));
+  }
+}
+
+class A {
+  public int soma(int x, int y) {
+    return x + y;
+  }
+}
+
+class B extends A {
+  public boolean teste(int n) {
+    return n < 10;
+  }
+}

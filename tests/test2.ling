@@ -1,0 +1,26 @@
+class Main {
+  public static void main(String[] args) {
+    A a;
+    int r;
+
+    a = new B();
+    r = a.soma(3, 4);
+    System.out.println(r);
+  }
+}
+
+class A {
+  int valor;
+
+  public int soma(int x, int y) {
+    int z;
+    z = x + y;
+    return z;
+  }
+}
+
+class B extends A {
+  public int dobro(int n) {
+    return n * 2;
+  }
+}
