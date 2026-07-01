@@ -195,7 +195,7 @@ void Lexer::mainLoop(bool stop_error)
             }
             else
             {
-                std::string error_message = std::string("token '") + currentChar + "' invalido na linha "
+                std::string error_message = std::string("token '") + currentChar + "' inválido na linha "
                     + std::to_string(tokenLine) + ", coluna " + std::to_string(tokenColumn);
                 if (stop_error)
                 {

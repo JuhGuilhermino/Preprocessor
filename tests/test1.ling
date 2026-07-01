@@ -1,17 +1,27 @@
 class Main {
   public static void main(String[] args) {
-    int x;
-    boolean ok;
-    int[] v;
-
-    x = 10;
-    ok = true;
-    v = new int[5];
-
-    if (ok && x < 20) {
-      System.out.println(x);
+    System.out.println(1);
+    if (true && 2 < 3) {
+      System.out.println(10);
     } else {
-      System.out.println(v.length);
+      System.out.println(0);
     }
+    while (false) {
+      System.out.println(99);
+    }
+  }
+}
+
+class Numeros {
+  int base;
+
+  public int somaTres(int a, int b, int c) {
+    int resultado;
+    resultado = a + b + c;
+    return resultado;
+  }
+
+  public boolean menorQueDez(int valor) {
+    return valor < 10;
   }
 }

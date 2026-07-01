@@ -125,24 +125,24 @@ token Parser::consumeValue(const std::string &value, std::string error)
 std::unique_ptr<BlockCommandNode> Parser::block()
 {
     auto block = std::make_unique<BlockCommandNode>();
-    consumeValue("{", "Expected {");
+    consumeValue("{", "Esperado '{'");
 
     while (!checkValue("}") && !finished())
     {
         block->commands.push_back(commands());
     }
 
-    consumeValue("}", "Expected }");
+    consumeValue("}", "Esperado '}'");
     return block;
 }
 
 std::unique_ptr<IfCommandNode> Parser::ifCommand()
 {
     auto ifNode = std::make_unique<IfCommandNode>();
-    consumeValue("if", "Expected if");
-    consumeValue("(", "Expected (");
+    consumeValue("if", "Esperado 'if'");
+    consumeValue("(", "Esperado '('");
     ifNode->condition = expression();
-    consumeValue(")", "Expected )");
+    consumeValue(")", "Esperado ')'");
 
     ifNode->thenCommand = commands();
 
@@ -169,10 +169,10 @@ std::unique_ptr<WhileCommandNode> Parser::whileCommand()
 {
     auto whileNode = std::make_unique<WhileCommandNode>();
 
-    consumeValue("while", "Expected while");
-    consumeValue("(", "Expected (");
+    consumeValue("while", "Esperado 'while'");
+    consumeValue("(", "Esperado '('");
     whileNode->condition = expression();
-    consumeValue(")", "Expected )");
+    consumeValue(")", "Esperado ')'");
     whileNode->while_block = commands();
     return whileNode;
 }
@@ -180,41 +180,41 @@ std::unique_ptr<WhileCommandNode> Parser::whileCommand()
 std::unique_ptr<PrintCommandNode> Parser::printCommand()
 {
     auto node = std::make_unique<PrintCommandNode>();
-    consumeValue("System", "Expected System");
-    consumeValue(".", "Expected .");
-    consumeValue("out", "Expected out");
-    consumeValue(".", "Expected .");
-    consumeValue("println", "Expected println");
-    consumeValue("(", "Expected (");
+    consumeValue("System", "Esperado 'System'");
+    consumeValue(".", "Esperado '.'");
+    consumeValue("out", "Esperado 'out'");
+    consumeValue(".", "Esperado '.'");
+    consumeValue("println", "Esperado 'println'");
+    consumeValue("(", "Esperado '('");
     node->expression = expression();
-    consumeValue(")", "Expected )");
-    consumeValue(";", "Expected ;");
+    consumeValue(")", "Esperado ')'");
+    consumeValue(";", "Esperado ';'");
     return node;
 }
 
 std::unique_ptr<CommandNode> Parser::assignmentCommand()
 {
-    auto identifier = consume(token_types_e::IDENTIFIER, "Expected identifier");
+    auto identifier = consume(token_types_e::IDENTIFIER, "Esperado identificador");
 
     if (checkValue("["))
     {
         auto node = std::make_unique<ArrayAssignmentCommandNode>();
         node->array_name = identifier.value;
-        consumeValue("[", "Expected [");
+        consumeValue("[", "Esperado '['");
         node->index = expression();
-        consumeValue("]", "Expected ]");
-        consumeValue("=", "Expected =");
+        consumeValue("]", "Esperado ']'");
+        consumeValue("=", "Esperado '='");
         node->value = expression();
-        consumeValue(";", "Expected ;");
+        consumeValue(";", "Esperado ';'");
         return node;
     }
     else
     {
         auto node = std::make_unique<AssignmentCommandNode>();
         node->target = identifier.value;
-        consumeValue("=", "Expected =");
+        consumeValue("=", "Esperado '='");
         node->value = expression();
-        consumeValue(";", "Expected ;");
+        consumeValue(";", "Esperado ';'");
         return node;
     }
 }
@@ -243,7 +243,7 @@ std::unique_ptr<CommandNode> Parser::commands()
     }
     else
     {
-        throw std::runtime_error("Expected command");
+        throw std::runtime_error("Esperado comando");
     }
 }
 
@@ -260,7 +260,7 @@ std::vector<std::unique_ptr<CommandNode>> Parser::commandList()
 
 void Parser::methodBlock(MethodNode &node)
 {
-    consumeValue("{", "Expected '{'");
+    consumeValue("{", "Esperado '{'");
     node.localVariables = multipleVarsDeclarations();
 
     // Add cada variável local no escopo do método na tablea de simbolos
@@ -270,10 +270,10 @@ void Parser::methodBlock(MethodNode &node)
     }
 
     node.commands = commandList();
-    consumeValue("return", "Expected return");
+    consumeValue("return", "Esperado 'return'");
     node.returnExpression = expression();
-    consumeValue(";", "Expected ;");
-    consumeValue("}", "Expected }");
+    consumeValue(";", "Esperado ';'");
+    consumeValue("}", "Esperado '}'");
 }
 
 std::vector<VarDeclNode> Parser::args()
@@ -281,14 +281,14 @@ std::vector<VarDeclNode> Parser::args()
     std::vector<VarDeclNode> vars;
     VarDeclNode var;
     var.type = type();
-    var.name = consume(token_types_e::IDENTIFIER, "Expected arg name").value;
+    var.name = consume(token_types_e::IDENTIFIER, "Esperado nome do argumento").value;
     vars.push_back(var);
     while (checkValue(","))
     {
         VarDeclNode var;
-        consumeValue(",", "Expected ,");
+        consumeValue(",", "Esperado ','");
         var.type = type();
-        var.name = consume(token_types_e::IDENTIFIER, "Expected arg name").value;
+        var.name = consume(token_types_e::IDENTIFIER, "Esperado nome do argumento").value;
         vars.push_back(var);
     }
 
@@ -298,16 +298,16 @@ std::vector<VarDeclNode> Parser::args()
 MethodNode Parser::methodDeclaration()
 {
     MethodNode method;
-    consumeValue("public", "Expected public");
+    consumeValue("public", "Esperado 'public'");
     method.returnType = type();
-    method.name = consume(token_types_e::IDENTIFIER, "Exepected method identifier").value;
+    method.name = consume(token_types_e::IDENTIFIER, "Esperado identificador do método").value;
     
     // Add o método da classe atual
     currentMethodName = method.name;
     std::string retTypeStr = method.returnType.name + (method.returnType.isArray ? "[]" : "");
     symbolTable.addSymbol(method.name, retTypeStr, symbol_category_e::METHOD, "class_" + currentClassName);
 
-    consumeValue("(", "Expected (");
+    consumeValue("(", "Esperado '('");
 
     if (!checkValue(")"))
     {
@@ -319,7 +319,7 @@ MethodNode Parser::methodDeclaration()
         }
     }
 
-    consumeValue(")", "Expected )");
+    consumeValue(")", "Esperado ')'");
     methodBlock(method);
 
     currentMethodName = "";
@@ -341,8 +341,8 @@ std::vector<MethodNode> Parser::multipleMethodsDeclarations()
 MainClassNode Parser::mainClassDeclaration()
 {
     MainClassNode main;
-    consumeValue("class", "Expected 'class'");
-    main.name = consume(token_types_e::IDENTIFIER, "Expected main class name").value;
+    consumeValue("class", "Esperado 'class'");
+    main.name = consume(token_types_e::IDENTIFIER, "Esperado nome da classe principal").value;
 
     // Add na tabela de símbolos
     currentClassName = main.name;
@@ -350,29 +350,29 @@ MainClassNode Parser::mainClassDeclaration()
     symbolTable.addSymbol(main.name, "class", symbol_category_e::CLASS, "global");
     symbolTable.addSymbol("main", "void", symbol_category_e::METHOD, "class_" + currentClassName);
 
-    consumeValue("{", "Expected '{' after class name");
+    consumeValue("{", "Esperado '{' depois do nome da classe");
 
-    consumeValue("public", "Expected 'public'");
-    consumeValue("static", "Expected 'static'");
-    consumeValue("void", "Expected 'void'");
-    consumeValue("main", "Expected 'main'");
+    consumeValue("public", "Esperado 'public'");
+    consumeValue("static", "Esperado 'static'");
+    consumeValue("void", "Esperado 'void'");
+    consumeValue("main", "Esperado 'main'");
 
-    consumeValue("(", "Expected '(' after main");
-    consumeValue("String", "Expected 'String'");
-    consumeValue("[", "Expected '[' after String");
-    consumeValue("]", "Expected ']' after '['");
-    main.argsName = consume(token_types_e::IDENTIFIER, "Expected args name").value;
+    consumeValue("(", "Esperado '(' depois de main");
+    consumeValue("String", "Esperado 'String'");
+    consumeValue("[", "Esperado '[' depois de String");
+    consumeValue("]", "Esperado ']' depois de '['");
+    main.argsName = consume(token_types_e::IDENTIFIER, "Esperado nome do argumento").value;
     
     // Add na tabela de símbolos
     symbolTable.addSymbol(main.argsName, "String[]", symbol_category_e::VARIABLE, "method_" + currentClassName + "_" + currentMethodName);
     
-    consumeValue(")", "Expected ')' after main parameter");
-    consumeValue("{", "Expected '{' before main body");
+    consumeValue(")", "Esperado ')' depois do parâmetro de main");
+    consumeValue("{", "Esperado '{' antes do corpo de main");
 
     main.commands = commandList();
 
-    consumeValue("}", "Expected '}' after main body");
-    consumeValue("}", "Expected '}' after main class");
+    consumeValue("}", "Esperado '}' depois do corpo de main");
+    consumeValue("}", "Esperado '}' depois da classe principal");
 
     currentClassName = "";
     currentMethodName = "";
@@ -383,8 +383,8 @@ MainClassNode Parser::mainClassDeclaration()
 ClassNode Parser::classDeclaration()
 {
     ClassNode classNode;
-    consumeValue("class", "Expected 'class'");
-    classNode.name = consume(token_types_e::IDENTIFIER, "Expected class name").value;
+    consumeValue("class", "Esperado 'class'");
+    classNode.name = consume(token_types_e::IDENTIFIER, "Esperado nome da classe").value;
 
     // Add na tabela de símbolos
     currentClassName = classNode.name;
@@ -392,12 +392,12 @@ ClassNode Parser::classDeclaration()
 
     if (matchValue("extends"))
     {
-        classNode.parentName = consume(token_types_e::IDENTIFIER, "Expected class name").value;
+        classNode.parentName = consume(token_types_e::IDENTIFIER, "Esperado nome da classe").value;
         // Add na tabela de símbolos
         symbolTable.setParentClass(classNode.name, classNode.parentName);
     }
 
-    consumeValue("{", "Expected '{' before main body");
+    consumeValue("{", "Esperado '{' antes do corpo da classe");
 
     // Add atributos da classa na tabela de simbolos
     classNode.variables = multipleVarsDeclarations();
@@ -408,7 +408,7 @@ ClassNode Parser::classDeclaration()
 
     classNode.methods = multipleMethodsDeclarations();
 
-    consumeValue("}", "Expected '}' after main body");
+    consumeValue("}", "Esperado '}' depois do corpo da classe");
 
     currentClassName = "";
 
@@ -438,7 +438,7 @@ TypeNode Parser::type()
     {
         if (matchValue("["))
         {
-            consumeValue("]", "Expected ]");
+            consumeValue("]", "Esperado ']'");
             type.isArray = true;
         }
         type.name = "int";
@@ -451,7 +451,7 @@ TypeNode Parser::type()
 
     else if (check(token_types_e::IDENTIFIER))
     {
-        type.name = consume(token_types_e::IDENTIFIER, "Expected type").value;
+        type.name = consume(token_types_e::IDENTIFIER, "Esperado tipo").value;
     }
 
     else
@@ -468,11 +468,11 @@ VarDeclNode Parser::varDeclaration()
     var.type = type();
     if (var.type.name == "")
     {
-        throw std::runtime_error("Expected type");
+        throw std::runtime_error("Esperado tipo");
     }
 
-    var.name = consume(token_types_e::IDENTIFIER, "Expected var name").value;
-    consumeValue(";", "Expected ';' after variable declaration");
+    var.name = consume(token_types_e::IDENTIFIER, "Esperado nome da variável").value;
+    consumeValue(";", "Esperado ';' depois da declaração de variável");
     return var;
 }
 
@@ -492,7 +492,7 @@ std::unique_ptr<ProgramNode> Parser::parse()
     auto program = std::make_unique<ProgramNode>();
     program->mainClass = mainClassDeclaration();
     program->classes = multipleClassDeclarations();
-    consume(token_types_e::EOF_TOKEN, "Expected end of file");
+    consume(token_types_e::EOF_TOKEN, "Esperado fim do arquivo");
     return program;
 }
 
@@ -531,28 +531,28 @@ std::unique_ptr<ExpressionNode> Parser::primaryExpression()
         if (matchValue("int"))
         {
             auto node = std::make_unique<NewArrayExpressionNode>();
-            consumeValue("[", "Expected [");
+            consumeValue("[", "Esperado '['");
             node->size = expression();
-            consumeValue("]", "Expected ]");
+            consumeValue("]", "Esperado ']'");
             return node;
         }
         else if (check(token_types_e::IDENTIFIER))
         {
             auto node = std::make_unique<NewObjectExpressionNode>();
             node->class_name = advance().value;
-            consumeValue("(", "Expected (");
-            consumeValue(")", "Expected )");
+            consumeValue("(", "Esperado '('");
+            consumeValue(")", "Esperado ')'");
             return node;
         }
     }
     else if (matchValue("("))
     {
         auto node = expression();
-        consumeValue(")", "Expected )");
+        consumeValue(")", "Esperado ')'");
         return node;
     }
 
-    throw std::runtime_error("Expected expression");
+    throw std::runtime_error("Esperada expressão");
 }
 
 std::unique_ptr<ExpressionNode> Parser::postfixExpression()
@@ -566,7 +566,7 @@ std::unique_ptr<ExpressionNode> Parser::postfixExpression()
             auto accessNode = std::make_unique<ArrayAccessExpressionNode>();
             accessNode->array = std::move(node);
             accessNode->index = expression();
-            consumeValue("]", "Expected ]");
+            consumeValue("]", "Esperado ']'");
             node = std::move(accessNode);
         }
         else if (matchValue("."))
@@ -581,12 +581,12 @@ std::unique_ptr<ExpressionNode> Parser::postfixExpression()
             {
                 auto callNode = std::make_unique<MethodCallExpressionNode>();
                 callNode->object = std::move(node);
-                callNode->method_name = consume(token_types_e::IDENTIFIER, "Expected method name after '.'").value;
-                consumeValue("(", "Expected ( after method name");
+                callNode->method_name = consume(token_types_e::IDENTIFIER, "Esperado nome do método depois de '.'").value;
+                consumeValue("(", "Esperado '(' depois do nome do método");
 
                 callNode->arguments = listExpression();
 
-                consumeValue(")", "Expected ) after method call");
+                consumeValue(")", "Esperado ')' depois da chamada de método");
                 node = std::move(callNode);
             }
         }

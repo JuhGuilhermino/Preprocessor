@@ -1,15 +1,17 @@
 class Main {
   public static void main(String[] args) {
-    int 2x;
-    boolean flag;
-
-    flag = tru;
-    x = 10 @ 3;
-
-    if (x < 10) {
-      System.out.println(x)
+    System.out.println(5);
+    if (true) {
+      System.out.println(10 @ 3);
+      System.out.println(20 # 4);
     } else {
-      System.out.println(0);
+      System.out.println(0 $ 1);
     }
+  }
+}
+
+class Apoio {
+  public int valor() {
+    return 1 ? 2;
   }
 }

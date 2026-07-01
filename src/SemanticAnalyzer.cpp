@@ -2,7 +2,7 @@
 #include <iostream>
 
 void SemanticAnalyzer::error(const std::string& message) {
-        throw std::runtime_error("Erro Semântico: " + message);
+        throw std::runtime_error(message);
     }
 
 bool isPrimitive(const std::string& type) {

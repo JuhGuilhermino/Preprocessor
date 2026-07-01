@@ -53,15 +53,15 @@ int Compiler::compile(int argc, char* argv[]){
     try{
         Parser parser(tokens);
         ast = parser.parse();
+        symbolTable = parser.getSymbolTable();
         if(flags.print_sintatic_tree){
             ASTPrinter printer(std::cout);
             printer.print(*ast);
         }
         if (flags.print_symbols_table) {
-            symbolTable = parser.getSymbolTable();
             symbolTable.print();
         }
-        std::cout << "Codigo sintaticamente correto!\n";
+        std::cout << "Código sintaticamente correto!\n";
     } catch (const std::exception& e) {
         std::cerr << "Erro sintático: " << e.what() << "\n";
         return 1;
@@ -70,9 +70,9 @@ int Compiler::compile(int argc, char* argv[]){
     try{
         SemanticAnalyzer semanticAnalyzer(symbolTable);
         semanticAnalyzer.analyze(*ast); 
-        std::cout << "Codigo semanticamente correto!\n";
+        std::cout << "Código semanticamente correto!\n";
     } catch (const std::exception& e) {
-        std::cerr << "Erro Semântico detectado: " << e.what() << "\n";
+        std::cerr << "Erro semântico detectado: " << e.what() << "\n";
         return 1;
     }
 

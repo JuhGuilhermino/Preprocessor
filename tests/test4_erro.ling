@@ -1,27 +1,22 @@
 class Main {
   public static void main(String[] args) {
+    System.out.println(1);
+    if (false) {
+      System.out.println(2);
+    } else {
+      System.out.println(3);
+    }
+  }
+}
+
+class ErroSemantico {
+  public int valor() {
     int x;
-    boolean b;
-    int[] arr;
-    A a;
-
-    x = true;
-    b = 10;
-    arr = new int[3];
-    arr[false] = 1;
-    a = new B();
-    System.out.println(a.inexistente(1));
+    x = 10;
+    return true;
   }
-}
 
-class A {
-  public int soma(int x, int y) {
-    return x + y;
-  }
-}
-
-class B extends A {
-  public boolean teste(int n) {
-    return n < 10;
+  public boolean compara(int a, int b) {
+    return a < b;
   }
 }
