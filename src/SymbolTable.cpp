@@ -75,3 +75,72 @@ void SymbolTable::print() const {
     }
     std::cout << "======================================================================\n";
 }
+
+std::string SymbolTable::lookupVariableType(const std::string& name, const std::string& className, const std::string& methodName) {
+    auto sym = lookupVariable(name, className, methodName);
+    if (sym.has_value()) {
+        return sym->type;
+    }
+    return "";
+}
+
+std::string SymbolTable::getMethodReturnType(const std::string& className, const std::string& methodName) {
+    std::string currentClass = className;
+
+    while (!currentClass.empty()) {
+      
+        std::string methodScope = "class_" + currentClass; 
+        std::string key = makeKey(methodScope, methodName);
+
+        auto it = table.find(key);
+        if (it != table.end() && it->second.category == symbol_category_e::METHOD) {
+            return it->second.type; 
+        }
+        
+        
+        auto parentIt = inheritanceMap.find(currentClass);
+        currentClass = (parentIt != inheritanceMap.end()) ? parentIt->second : "";
+    }
+    return ""; 
+}
+
+std::vector<std::string> SymbolTable::getMethodParameters(const std::string& className, const std::string& methodName) {
+    std::vector<std::string> params;
+    std::string currentClass = className;
+    std::string targetMethodScope = "";
+
+    
+    while (!currentClass.empty()) {
+        std::string classScope = "class_" + currentClass;
+        std::string key = makeKey(classScope, methodName);
+        if (table.find(key) != table.end()) {
+            targetMethodScope = "method_" + currentClass + "_" + methodName;
+            break;
+        }
+        auto parentIt = inheritanceMap.find(currentClass);
+        currentClass = (parentIt != inheritanceMap.end()) ? parentIt->second : "";
+    }
+
+    if (targetMethodScope.empty()) return {};
+
+    for (const auto& pair : table) {
+        const Symbol& sym = pair.second;
+        if (sym.scope == targetMethodScope && sym.category == symbol_category_e::VARIABLE) {
+            params.push_back(sym.type);
+        }
+    }
+    return params;
+}
+
+std::string SymbolTable::getParentClass(const std::string& className) {
+    auto it = inheritanceMap.find(className);
+    if (it != inheritanceMap.end()) {
+        return it->second; 
+    }
+    return "";
+}
+
+bool SymbolTable::classExists(const std::string& className) {
+    std::string globalKey = makeKey("global", className);
+    return table.find(globalKey) != table.end();
+}

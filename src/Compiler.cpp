@@ -58,11 +58,21 @@ int Compiler::compile(int argc, char* argv[]){
             printer.print(*ast);
         }
         if (flags.print_symbols_table) {
-            parser.getSymbolTable().print();
+            symbolTable = parser.getSymbolTable();
+            symbolTable.print();
         }
         std::cout << "Codigo sintaticamente correto!\n";
     } catch (const std::exception& e) {
         std::cerr << "Erro sintático: " << e.what() << "\n";
+        return 1;
+    }
+
+    try{
+        SemanticAnalyzer semanticAnalyzer(symbolTable);
+        semanticAnalyzer.analyze(*ast); 
+        std::cout << "Codigo semanticamente correto!\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Erro Semântico detectado: " << e.what() << "\n";
         return 1;
     }
 

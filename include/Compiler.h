@@ -5,6 +5,8 @@
 #include "parser.h"
 #include "CompileHelper.h"
 #include "FileHandler.h"
+#include "SemanticAnalyzer.h"
+#include "SymbolTable.h"
 
 
 class Compiler{
@@ -13,6 +15,8 @@ class Compiler{
     Flags flags;
     FileHandler file_handler;
     std::unique_ptr<ProgramNode> ast;
+    SymbolTable symbolTable;
+
 
     public:
     int compile(int argc, char* argv[]);

@@ -14,4 +14,5 @@ add_executable(preprocessor
     src/lexer.cpp
     src/parser.cpp
     src/SymbolTable.cpp
+    src/SemanticAnalyzer.cpp
 )
