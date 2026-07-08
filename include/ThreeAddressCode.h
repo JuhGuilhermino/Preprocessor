@@ -16,7 +16,8 @@ enum opcode : std::uint8_t{
     RETURN,
     IF_FALSE,
     LABEL,
-    GOTO
+    GOTO,
+    LT
 };
 
 
