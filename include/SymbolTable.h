@@ -26,14 +26,16 @@ class SymbolTable {
 private:
     std::unordered_map<std::string, Symbol> table;                 // escopo::nome_do_simbolo
     std::unordered_map<std::string, std::string> inheritanceMap;   // mapeia a herança
+    std::unordered_map<std::string, std::vector<std::string>> methodParameters;
 
     std::string makeKey(const std::string& scope, const std::string& name);
 
 public:
     bool addSymbol(const std::string& name, const std::string& type, symbol_category_e category, const std::string& scope);
+    void addMethodParameters(const std::string& className, const std::string& methodName, const std::vector<std::string>& parameters);
     void setParentClass(const std::string& className, const std::string& parentClassName);
     std::optional<Symbol> lookupVariable(const std::string& name, const std::string& currentClass, const std::string& currentMethod);
-    void clear() { table.clear(); inheritanceMap.clear(); }
+    void clear() { table.clear(); inheritanceMap.clear(); methodParameters.clear(); }
     void print() const;
 
     std::string lookupVariableType(const std::string& name, const std::string& className, const std::string& methodName);

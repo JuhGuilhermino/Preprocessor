@@ -312,11 +312,14 @@ MethodNode Parser::methodDeclaration()
     if (!checkValue(")"))
     {
         method.parameters = args();
+        std::vector<std::string> parameterTypes;
         // Add cada parâmetro na tabela de simbolos
         for (const auto& param : method.parameters) {
             std::string paramTypeStr = param.type.name + (param.type.isArray ? "[]" : "");
+            parameterTypes.push_back(paramTypeStr);
             symbolTable.addSymbol(param.name, paramTypeStr, symbol_category_e::VARIABLE, "method_" + currentClassName + "_" + currentMethodName);
         }
+        symbolTable.addMethodParameters(currentClassName, currentMethodName, parameterTypes);
     }
 
     consumeValue(")", "Esperado ')'");

@@ -15,6 +15,11 @@ bool SymbolTable::addSymbol(const std::string& name, const std::string& type, sy
     return true;
 }
 
+void SymbolTable::addMethodParameters(const std::string& className, const std::string& methodName, const std::vector<std::string>& parameters) {
+    std::string key = makeKey("class_" + className, methodName);
+    methodParameters[key] = parameters;
+}
+
 void SymbolTable::setParentClass(const std::string& className, const std::string& parentClassName) {
     inheritanceMap[className] = parentClassName;
 }
@@ -105,31 +110,20 @@ std::string SymbolTable::getMethodReturnType(const std::string& className, const
 }
 
 std::vector<std::string> SymbolTable::getMethodParameters(const std::string& className, const std::string& methodName) {
-    std::vector<std::string> params;
     std::string currentClass = className;
-    std::string targetMethodScope = "";
 
-    
     while (!currentClass.empty()) {
         std::string classScope = "class_" + currentClass;
         std::string key = makeKey(classScope, methodName);
         if (table.find(key) != table.end()) {
-            targetMethodScope = "method_" + currentClass + "_" + methodName;
-            break;
+            auto paramsIt = methodParameters.find(key);
+            return paramsIt != methodParameters.end() ? paramsIt->second : std::vector<std::string>{};
         }
         auto parentIt = inheritanceMap.find(currentClass);
         currentClass = (parentIt != inheritanceMap.end()) ? parentIt->second : "";
     }
 
-    if (targetMethodScope.empty()) return {};
-
-    for (const auto& pair : table) {
-        const Symbol& sym = pair.second;
-        if (sym.scope == targetMethodScope && sym.category == symbol_category_e::VARIABLE) {
-            params.push_back(sym.type);
-        }
-    }
-    return params;
+    return {};
 }
 
 std::string SymbolTable::getParentClass(const std::string& className) {
