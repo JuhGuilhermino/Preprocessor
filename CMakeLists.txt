@@ -15,4 +15,6 @@ add_executable(preprocessor
     src/parser.cpp
     src/SymbolTable.cpp
     src/SemanticAnalyzer.cpp
+    src/ThreeAddressCode.cpp
+    src/CodeGenerator.cpp
 )

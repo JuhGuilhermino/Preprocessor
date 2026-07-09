@@ -76,6 +76,15 @@ int Compiler::compile(int argc, char* argv[]){
         return 1;
     }
 
+    try {
+        CodeGenerator codeGen(symbolTable);
+        TACList final3AC = codeGen.generate(*ast);
+        final3AC.print();
+    } catch (const std::exception& e) {
+        std::cerr << "Erro na geração de código 3AC: " << e.what() << "\n";
+        return 1;
+    }
+
     return 0;
 
     
