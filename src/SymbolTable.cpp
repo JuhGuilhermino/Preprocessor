@@ -138,3 +138,31 @@ bool SymbolTable::classExists(const std::string& className) {
     std::string globalKey = makeKey("global", className);
     return table.find(globalKey) != table.end();
 }
+
+Symbol* SymbolTable::newTemp(const std::string& className, const std::string& methodName) {
+    std::string name = "temp$" + std::to_string(tempCounter++);
+    
+    std::string methodScope = "method_" + className + "_" + methodName;
+    
+    auto sym = std::make_shared<Symbol>(Symbol{name, "int", symbol_category_e::VARIABLE, methodScope});
+    Symbol* ptr = sym.get();
+    
+    std::string key = makeKey(methodScope, name);
+    table[key] = *sym; 
+    generatedSymbols.push_back(std::move(sym));
+    
+    return ptr; 
+}
+
+Symbol* SymbolTable::newLabel() {
+    std::string name = "L$" + std::to_string(labelCounter++);
+    
+    auto sym = std::make_shared<Symbol>(Symbol{name, "label", symbol_category_e::VARIABLE, "global"});
+    Symbol* ptr = sym.get();
+    
+    std::string key = makeKey("global", name);
+    table[key] = *sym;
+    generatedSymbols.push_back(std::move(sym));
+    
+    return ptr;
+}

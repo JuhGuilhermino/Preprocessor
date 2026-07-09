@@ -30,6 +30,12 @@ private:
 
     std::string makeKey(const std::string& scope, const std::string& name);
 
+    int tempCounter = 0;
+    int labelCounter = 0;
+
+    // Ponteiros dos temporários/labels estáveis e protegidos contra realocações do unordered_map.
+    std::vector<std::shared_ptr<Symbol>> generatedSymbols;
+
 public:
     bool addSymbol(const std::string& name, const std::string& type, symbol_category_e category, const std::string& scope);
     void addMethodParameters(const std::string& className, const std::string& methodName, const std::vector<std::string>& parameters);
@@ -43,6 +49,9 @@ public:
     std::vector<std::string> getMethodParameters(const std::string& className, const std::string& methodName);
     std::string getParentClass(const std::string& className);
     bool classExists(const std::string& className);
+
+    Symbol* newTemp(const std::string& className, const std::string& methodName);
+    Symbol* newLabel();
 };
 
 #endif

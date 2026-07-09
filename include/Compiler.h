@@ -7,6 +7,8 @@
 #include "FileHandler.h"
 #include "SemanticAnalyzer.h"
 #include "SymbolTable.h"
+#include "CodeGenerator.h"
+#include "ThreeAddressCode.h"
 
 
 class Compiler{
@@ -22,8 +24,5 @@ class Compiler{
     int compile(int argc, char* argv[]);
 
 };
-
-
-
 
 #endif
