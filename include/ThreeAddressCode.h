@@ -9,15 +9,22 @@ enum opcode : std::uint8_t{
     ADD, 
     SUB, 
     MUL,
+    LT,
     AND,
     NOT,
     ASSIGN,
+    ARRAY_LOAD,
+    ARRAY_STORE,
+    ARRAY_LENGTH,
+    NEW_ARRAY,
+    NEW_OBJECT,
+    PARAM,
+    CALL,
     PRINT,
     RETURN,
     IF_FALSE,
     LABEL,
-    GOTO,
-    LT
+    GOTO
 };
 
 

@@ -20,12 +20,28 @@ std::string opcodeToString(opcode op){
             return "-";
         case MUL:
             return "*";
+        case LT:
+            return "<";
         case AND:
             return "&&";
         case NOT:
             return "!";
         case ASSIGN:
             return "=";
+        case ARRAY_LOAD:
+            return "=[]";
+        case ARRAY_STORE:
+            return "[]=";
+        case ARRAY_LENGTH:
+            return "length";
+        case NEW_ARRAY:
+            return "new int";
+        case NEW_OBJECT:
+            return "new";
+        case PARAM:
+            return "param";
+        case CALL:
+            return "call";
         case PRINT:
             return "print";
         case RETURN:
@@ -87,6 +103,7 @@ void Instruction::print(){
         case ADD:
         case SUB:
         case MUL:
+        case LT:
         case AND:
             std::cout << symbolName(result) << " = "
                       << symbolName(arg1) << " " << opcodeToString(op) << " "
@@ -98,6 +115,33 @@ void Instruction::print(){
             break;
         case ASSIGN:
             std::cout << symbolName(result) << " = " << symbolName(arg1) << "\n";
+            break;
+        case ARRAY_LOAD:
+            std::cout << symbolName(result) << " = "
+                      << symbolName(arg1) << "[" << symbolName(arg2) << "]\n";
+            break;
+        case ARRAY_STORE:
+            std::cout << symbolName(result) << "["
+                      << symbolName(arg1) << "] = " << symbolName(arg2) << "\n";
+            break;
+        case ARRAY_LENGTH:
+            std::cout << symbolName(result) << " = "
+                      << symbolName(arg1) << ".length\n";
+            break;
+        case NEW_ARRAY:
+            std::cout << symbolName(result) << " = new int["
+                      << symbolName(arg1) << "]\n";
+            break;
+        case NEW_OBJECT:
+            std::cout << symbolName(result) << " = new "
+                      << symbolName(arg1) << "()\n";
+            break;
+        case PARAM:
+            std::cout << "param " << symbolName(arg1) << "\n";
+            break;
+        case CALL:
+            std::cout << symbolName(result) << " = call "
+                      << symbolName(arg1) << ", " << symbolName(arg2) << "\n";
             break;
         case PRINT:
             std::cout << "print " << symbolName(arg1) << "\n";

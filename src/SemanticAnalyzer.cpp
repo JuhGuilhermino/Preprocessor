@@ -148,7 +148,7 @@ std::string SemanticAnalyzer::analyzeExpression(ExpressionNode* expr) {
         std::string t1 = analyzeExpression(binExpr->value1.get());
         std::string t2 = analyzeExpression(binExpr->value2.get());
 
-        if (binExpr->op == "+" || binExpr->op == "-") {
+        if (binExpr->op == "+" || binExpr->op == "-" || binExpr->op == "*") {
             if (t1 == "int" && t2 == "int") return "int";
             error("Operador '" + binExpr->op + "' exige operandos do tipo 'int'.");
         }
